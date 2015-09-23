@@ -1,0 +1,12 @@
+*.dll
+*.xml
+node_modules/
+
+# Visual Studio #
+.settings/
+.vscode/
+*.sln
+*.suo
+*.user
+*.suo
+.ntvs_analysis.*
