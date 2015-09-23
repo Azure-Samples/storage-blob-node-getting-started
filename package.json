@@ -1,0 +1,43 @@
+{
+  "name": "storage-blob-node-getting-started",
+  "author": {
+    "name": "Microsoft Corporation"
+  },
+  "version": "0.0.1",
+  "description": "Basic Operations with Azure Storage Blob Service",
+  "tags": [
+    "azure",
+    "storage",
+    "sample"
+  ],
+  "keywords": [
+    "node",
+    "azure",
+    "storage"
+  ],
+  "main": "./blobSample.js",
+  "engines": {
+    "node": ">= 0.8.26"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "node-uuid": "~1.4.0",
+    "request": "~2.56.0",
+    "azure-storage": "0.6.0"
+  },
+  "devDependencies": {
+    "jshint": ">= 2.1.4"
+  },
+  "homepage": "https://github.com/Azure-Samples/storage-blob-node-getting-started",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Azure-Samples/storage-blob-node-getting-started.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Azure-Samples/storage-blob-node-getting-started/issues"
+  },
+  "scripts": {
+    "check": "jshint blobSample.js"
+  },
+  "readmeFilename": "README.md"
+}
