@@ -26,7 +26,7 @@
 * - Blob Service REST API - http://msdn.microsoft.com/en-us/library/dd135733.aspx
 * - Blob Service Node API - http://azure.github.io/azure-storage-node/BlobService.html
 * - Delegating Access with Shared Access Signatures - http://azure.microsoft.com/en-us/documentation/articles/storage-dotnet-shared-access-signature-part-1/
-* - Storage Emulator - http://msdn.microsoft.com/en-us/library/azure/hh403989.aspx
+* - Storage Emulator - https://azure.microsoft.com/en-us/documentation/articles/storage-use-emulator/
 */
 
 var fs = require('fs');
@@ -40,15 +40,15 @@ runBlobSamples();
 function runBlobSamples() {
   /**
    * Instructions: This sample can be run using either the Azure Storage Emulator that installs as part of this SDK - or by  
-   * updating the app.Config file with your AccountName and Key.
+   * updating the app.config file with your connection string.
    *
    * To run the sample using the Storage Emulator (default option)
    *      Start the Azure Storage Emulator (once only) by pressing the Start button or the Windows key and searching for it
    *      by typing "Azure Storage Emulator". Select it from the list of applications to start it.
    * 
    * To run the sample using the Storage Service
-   *      Open the app.config file and comment out the connection string for the emulator (UseDevelopmentStorage=True) and
-   *      uncomment the connection string for the storage service.
+   *      Open the app.config file and comment out the connection string for the emulator ("useDevelopmentStorage":true) and
+   *      set the connection string for the storage service.
    */   
   console.log('\nAzure Storage Blob Sample\n');
   

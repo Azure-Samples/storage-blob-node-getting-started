@@ -33,7 +33,7 @@ To run the sample using the Storage Service
 
 ## More information
 - [What is a Storage Account](http://azure.microsoft.com/en-us/documentation/articles/storage-whatis-account/)
-- [Getting Started with Blobs](http://azure.microsoft.com/en-us/documentation/articles/storage-dotnet-how-to-use-blobs/)
+- [Getting Started with Blobs](https://azure.microsoft.com/en-us/documentation/articles/storage-nodejs-how-to-use-blob-storage/)
 - [Blob Service Concepts](http://msdn.microsoft.com/en-us/library/dd179376.aspx)
 - [Blob Service REST API](http://msdn.microsoft.com/en-us/library/dd135733.aspx)
 - [Blob Service Node API](http://azure.github.io/azure-storage-node/BlobService.html)
