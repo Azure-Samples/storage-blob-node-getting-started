@@ -21,13 +21,15 @@ To run the sample using the Storage Emulator (default option):
 
 1. Download and Install the Azure Storage Emulator [here](http://azure.microsoft.com/en-us/downloads/).
 2. Start the Azure Storage Emulator (once only) by pressing the Start button or the Windows key and searching for it by typing "Azure Storage Emulator". Select it from the list of applications to start it.
-3. Run the sample by: node ./blobSample.js
+3. Open the app.config file and set the configuration for the emulator ("useDevelopmentStorage":true).
+4. Run the sample by: node ./blobSample.js
 
 To run the sample using the Storage Service
 
-1. Open the app.config file and comment out the connection string for the emulator (UseDevelopmentStorage=True) and uncomment the connection string for the storage service (AccountName=[]...)
-2. Create a Storage Account through the Azure Portal and provide your [accountName] and [accountKey] in the app.config file.
-3. Run the sample by: node ./blobSample.js
+1. Open the app.config file and set the connection string for the emulator ("useDevelopmentStorage":false) and set the connection string for the storage service ("connectionString":"...")
+2. Create a Storage Account through the Azure Portal
+3. Provide your connection string for the storage service ("connectionString":"...") in the app.config file. 
+4. Run the sample by: node ./blobSample.js
 
 ## More information
 - [What is a Storage Account](http://azure.microsoft.com/en-us/documentation/articles/storage-whatis-account/)
@@ -36,4 +38,4 @@ To run the sample using the Storage Service
 - [Blob Service REST API](http://msdn.microsoft.com/en-us/library/dd135733.aspx)
 - [Blob Service Node API](http://azure.github.io/azure-storage-node/BlobService.html)
 - [Delegating Access with Shared Access Signatures](http://azure.microsoft.com/en-us/documentation/articles/storage-dotnet-shared-access-signature-part-1/)
-- [Storage Emulator](http://msdn.microsoft.com/en-us/library/azure/hh403989.aspx)
+- [Storage Emulator](https://azure.microsoft.com/en-us/documentation/articles/storage-use-emulator/)

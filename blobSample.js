@@ -84,7 +84,7 @@ function basicStorageBlockBlobOperations(callback) {
   // Create a blob client for interacting with the blob service from connection string
   // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
   var blobService = storage.createBlobService(readConfig().connectionString);
-  
+
   var imageToUpload = "HelloWorld.png";
   var blockBlobContainerName = "demoblockblobcontainer-" + guid.v1();
   var blockBlobName = "demoblockblob-" + imageToUpload;
@@ -294,5 +294,9 @@ function zeroPaddingString(str, len) {
 }
 
 function readConfig() {
-  return JSON.parse(fs.readFileSync('app.config', 'utf8'));
+  var config = JSON.parse(fs.readFileSync('app.config', 'utf8'));
+  if (config.useDevelopmentStorage) {
+    config.connectionString = storage.generateDevelopmentStorageCredendentials();
+  }
+  return config;
 }
