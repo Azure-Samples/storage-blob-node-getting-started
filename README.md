@@ -1,6 +1,6 @@
 ---
 services: storage
-platforms: node
+platforms: nodejs
 author: yaxia
 ---
 
