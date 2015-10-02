@@ -4,7 +4,7 @@ platforms: nodejs
 author: yaxia
 ---
 
-# Azure Storage: Blobs
+# Getting Started with Azure Blob Service in Node.js
 
 Demonstrates how to use the Blob Storage service.
 Blob storage stores unstructured data such as text, binary data, documents or media files.
