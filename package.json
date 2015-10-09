@@ -19,7 +19,12 @@
   "engines": {
     "node": ">= 0.8.26"
   },
-  "license": "Apache-2.0",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Azure-Samples/storage-blob-node-getting-started/blob/master/LICENSE"
+    }
+  ],
   "dependencies": {
     "node-uuid": "~1.4.0",
     "request": "~2.56.0",
