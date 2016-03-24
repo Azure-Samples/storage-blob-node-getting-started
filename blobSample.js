@@ -35,9 +35,11 @@ var guid = require('node-uuid');
 var crypto = require('crypto');
 var storage = require('azure-storage');
 
-runBlobSamples();
 
-function runBlobSamples() {
+var config = readConfig();
+runBlobSamples(config);
+
+function runBlobSamples(config) {
   /**
    * Instructions: This sample can be run using either the Azure Storage Emulator that installs as part of this SDK - or by  
    * updating the app.config file with your connection string.
@@ -61,6 +63,10 @@ function runBlobSamples() {
     {
       scenario: basicStoragePageBlobOperations,
       message: 'Page Blob Sample Completed\n'
+    }, 
+    {
+      scenario: basicStorageAppendBlobOperations,
+      message: 'Append Blob Sample Completed\n'
     }];
   
   var callback = function (error) {
@@ -71,24 +77,25 @@ function runBlobSamples() {
       
       current++;
       if (current < scenarios.length) {
-        scenarios[current].scenario(callback);
+        scenarios[current].scenario(config, callback);
       }
     }
   };
    
-  scenarios[current].scenario(callback);
+  scenarios[current].scenario(config, callback);
 }
 
 /**
 * Page blob basics.
 * @ignore
 * 
+* @param {config}               config                           The configuration which contains the connectionString.
 * @param {errorOrResult}        callback                         The callback function.
 */
-function basicStorageBlockBlobOperations(callback) {
+function basicStorageBlockBlobOperations(config, callback) {
   // Create a blob client for interacting with the blob service from connection string
   // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
-  var blobService = storage.createBlobService(readConfig().connectionString);
+  var blobService = storage.createBlobService(config.connectionString);
 
   var imageToUpload = "HelloWorld.png";
   var blockBlobContainerName = "demoblockblobcontainer-" + guid.v1();
@@ -120,7 +127,7 @@ function basicStorageBlockBlobOperations(callback) {
               callback(error);
             } else {
               for (var i = 0; i < results.length; i++) {
-                console.log(util.format('   - %s (type: %s)'), results[i].name, results[i].properties.blobtype);
+                console.log(util.format('   - %s (type: %s)'), results[i].name, results[i].blobType);
               }
               
               // Download a blob to your file system
@@ -194,12 +201,13 @@ function basicStorageBlockBlobOperations(callback) {
 * Page blob basics.
 * @ignore
 * 
+* @param {config}               config                           The configuration which contains the connectionString.
 * @param {errorOrResult}        callback                         The callback function.
 */
-function basicStoragePageBlobOperations(callback) {
+function basicStoragePageBlobOperations(config, callback) {
   // Create a blob client for interacting with the blob service from connection string
   // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
-  var blobService = storage.createBlobService(readConfig().connectionString);
+  var blobService = storage.createBlobService(config.connectionString);
 
   var fileToUpload = "HelloPage.dat";
   var pageBlobContainerName = "demopageblobcontainer-" + guid.v1();
@@ -215,7 +223,7 @@ function basicStoragePageBlobOperations(callback) {
     } else {
       // To view the uploaded blob in a browser, you have two options. The first option is to use a Shared Access Signature (SAS) token to delegate 
       // access to the resource. See the documentation links at the top for more information on SAS. The second approach is to set permissions 
-      // to allow public access to blobs in this container. Uncomment the line below to use this approach. Then you can view the image 
+      // to allow public access to blobs in this container. Uncomment the line below to use this approach. Then you can view the file 
       // using: https://[InsertYourStorageAccountNameHere].blob.core.windows.net/demopageblobcontainer-[guid]/demopageblob-HelloPage.dat
       
       // Upload a PageBlob to the newly created container
@@ -231,7 +239,7 @@ function basicStoragePageBlobOperations(callback) {
               callback(error);
             } else {
               for (var i = 0; i < results.length; i++) {
-                console.log(util.format('   - %s (type: %s)'), results[i].name, results[i].properties.blobtype);
+                console.log(util.format('   - %s (type: %s)'), results[i].name, results[i].blobType);
               }
               
               // Read a range from a page blob
@@ -246,15 +254,102 @@ function basicStoragePageBlobOperations(callback) {
                     console.log('   Downloaded File Size: %s', stats.size);
                     try { fs.unlinkSync(downloadedFileName); } catch (e) { }
                     // Clean up after the demo 
-                    console.log('7. Delete Page Blob');
+                    console.log('5. Delete Page Blob');
                     blobService.deleteBlob(pageBlobContainerName, pageBlobName, function (error) {
                       if (error) {
                         callback(error);
                       } else {
                         // Delete the container
-                        console.log('8. Delete Container');
+                        console.log('6. Delete Container');
                         blobService.deleteContainerIfExists(pageBlobContainerName, function (error) {
                           callback(error);
+                        });
+                      }
+                    });
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+
+/**
+* Append blob basics.
+* @ignore
+* 
+* @param {config}               config                           The configuration which contains the connectionString.
+* @param {errorOrResult}        callback                         The callback function.
+*/
+function basicStorageAppendBlobOperations(config, callback) {
+  // Create a blob client for interacting with the blob service from connection string
+  // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
+  var blobService = storage.createBlobService(config.connectionString);
+
+  var fileToUpload = "HelloAppend.dat";
+  var appendBlobContainerName = "demoappendblobcontainer-" + guid.v1();
+  var appendBlobName = "demoappendblob-" + fileToUpload;
+  
+  console.log('Append Blob Sample');
+  
+  // Create a container for organizing blobs within the storage account.
+  console.log('1. Creating Container');
+  blobService.createContainerIfNotExists(appendBlobContainerName, function (error) {
+    if (error) {
+      callback(error);
+    } else {
+      // To view the uploaded blob in a browser, you have two options. The first option is to use a Shared Access Signature (SAS) token to delegate 
+      // access to the resource. See the documentation links at the top for more information on SAS. The second approach is to set permissions 
+      // to allow public access to blobs in this container. Uncomment the line below to use this approach. Then you can view the file 
+      // using: https://[InsertYourStorageAccountNameHere].blob.core.windows.net/demoappendblobcontainer-[guid]/demopageblob-HelloAppend.dat
+      
+      // Upload a PageBlob to the newly created container
+      console.log('2. Uploading AppendBlob');
+      blobService.createAppendBlobFromLocalFile(appendBlobContainerName, appendBlobName, fileToUpload, function (error) {
+        if (error) {
+          callback(error);
+        } else {
+          // List all the blobs in the container
+          console.log('3. List Blobs in Container');
+          listBlobs(blobService, appendBlobContainerName, null, null, function (error, results) {
+             if (error) {
+              callback(error);
+            } else {
+              for (var i = 0; i < results.length; i++) {
+                console.log(util.format('   - %s (type: %s)'), results[i].name, results[i].blobType);
+              }
+              
+              // Download a blob to your file system
+              console.log('4. Download Blob');
+              var downloadedFileName = util.format('CopyOf%s', fileToUpload);
+              blobService.getBlobToLocalFile(appendBlobContainerName, appendBlobName, downloadedFileName, function (error) {
+                if (error) {
+                  callback(error);
+                } else {
+                  fs.stat(downloadedFileName, function(error, stats) {
+                    console.log('5. Append block to append blob');
+                    blobService.appendBlockFromText(appendBlobContainerName, appendBlobName, 'text to be appended', { appendPosition: stats.size }, function(error){
+                      if (error) {
+                        callback(error);
+                      } else {
+                        console.log('   Downloaded File Size: %s', stats.size);
+                        try { fs.unlinkSync(downloadedFileName); } catch (e) { }
+                        // Clean up after the demo 
+                        console.log('6. Delete Append Blob');
+                        blobService.deleteBlob(appendBlobContainerName, appendBlobName, function (error) {
+                          if (error) {
+                            callback(error);
+                          } else {
+                            // Delete the container
+                            console.log('7. Delete Container');
+                            blobService.deleteContainerIfExists(appendBlobContainerName, function (error) {
+                              callback(error);
+                            });
+                          }
                         });
                       }
                     });
