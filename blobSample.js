@@ -97,9 +97,10 @@ function basicStorageBlockBlobOperations(config, callback) {
   // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
   var blobService = storage.createBlobService(config.connectionString);
 
-  var imageToUpload = "HelloWorld.png";
+  var fileToUpload = "HelloWorld.dat";
+  writeRandomFile(fileToUpload, 1024);
   var blockBlobContainerName = "demoblockblobcontainer-" + guid.v1();
-  var blockBlobName = "demoblockblob-" + imageToUpload;
+  var blockBlobName = "demoblockblob-" + fileToUpload;
   
   console.log('Block Blob Sample');
   
@@ -116,7 +117,7 @@ function basicStorageBlockBlobOperations(config, callback) {
       
       // Upload a BlockBlob to the newly created container
       console.log('2. Uploading BlockBlob');
-      blobService.createBlockBlobFromLocalFile(blockBlobContainerName, blockBlobName, imageToUpload, function (error) {
+      blobService.createBlockBlobFromLocalFile(blockBlobContainerName, blockBlobName, fileToUpload, function (error) {
         if (error) {
           callback(error);
         } else {
@@ -132,8 +133,8 @@ function basicStorageBlockBlobOperations(config, callback) {
               
               // Download a blob to your file system
               console.log('4. Download Blob');
-              var downloadedImageName = util.format('CopyOf%s', imageToUpload);
-              blobService.getBlobToLocalFile(blockBlobContainerName, blockBlobName, downloadedImageName, function (error) {
+              var downloadedFileName = util.format('CopyOf%s', fileToUpload);
+              blobService.getBlobToLocalFile(blockBlobContainerName, blockBlobName, downloadedFileName, function (error) {
                 if (error) {
                   callback(error);
                 } else {
@@ -167,13 +168,14 @@ function basicStorageBlockBlobOperations(config, callback) {
                               console.log('7. Delete block Blob and all of its snapshots');
                               var deleteOption = { deleteSnapshots: storage.BlobUtilities.SnapshotDeleteOptions.BLOB_AND_SNAPSHOTS };
                               blobService.deleteBlob(blockBlobContainerName, blockBlobName, deleteOption, function (error) {
-                                try { fs.unlinkSync(downloadedImageName); } catch (e) { }
+                                try { fs.unlinkSync(downloadedFileName); } catch (e) { }
                                 if (error) {
                                   callback(error);
                                 } else {
                                   // Delete the container
                                   console.log('8. Delete Container');
                                   blobService.deleteContainerIfExists(blockBlobContainerName, function (error) {
+                                    try { fs.unlinkSync(fileToUpload); } catch (e) { }
                                     callback(error);
                                   });
                                 }
@@ -210,6 +212,8 @@ function basicStoragePageBlobOperations(config, callback) {
   var blobService = storage.createBlobService(config.connectionString);
 
   var fileToUpload = "HelloPage.dat";
+  writeRandomFile(fileToUpload, 1024);
+  
   var pageBlobContainerName = "demopageblobcontainer-" + guid.v1();
   var pageBlobName = "demopageblob-" + fileToUpload;
   
@@ -262,6 +266,7 @@ function basicStoragePageBlobOperations(config, callback) {
                         // Delete the container
                         console.log('6. Delete Container');
                         blobService.deleteContainerIfExists(pageBlobContainerName, function (error) {
+                          try { fs.unlinkSync(fileToUpload); } catch (e) { }
                           callback(error);
                         });
                       }
@@ -291,6 +296,7 @@ function basicStorageAppendBlobOperations(config, callback) {
   var blobService = storage.createBlobService(config.connectionString);
 
   var fileToUpload = "HelloAppend.dat";
+  writeRandomFile(fileToUpload, 1024);
   var appendBlobContainerName = "demoappendblobcontainer-" + guid.v1();
   var appendBlobName = "demoappendblob-" + fileToUpload;
   
@@ -332,7 +338,7 @@ function basicStorageAppendBlobOperations(config, callback) {
                 } else {
                   fs.stat(downloadedFileName, function(error, stats) {
                     console.log('5. Append block to append blob');
-                    blobService.appendBlockFromText(appendBlobContainerName, appendBlobName, 'text to be appended', { appendPosition: stats.size }, function(error){
+                    blobService.appendBlockFromText(appendBlobContainerName, appendBlobName, 'text to be appended', { appendPosition: stats.size } /** append to the end of the existing append blob */, function(error){
                       if (error) {
                         callback(error);
                       } else {
@@ -347,6 +353,7 @@ function basicStorageAppendBlobOperations(config, callback) {
                             // Delete the container
                             console.log('7. Delete Container');
                             blobService.deleteContainerIfExists(appendBlobContainerName, function (error) {
+                              try { fs.unlinkSync(fileToUpload); } catch (e) { }
                               callback(error);
                             });
                           }
@@ -414,6 +421,18 @@ function listBlobs (blobService, container, token, options, callback) {
 */
 function getRandomBuffer(size) {
   return crypto.randomBytes(size);
+}
+
+/**
+* Write some random bytes to the specified file.
+* @ignore
+*
+* @param  {string}    file    The file name.
+* @param  {int}       size    The size of the file in bytes.
+*/
+function writeRandomFile(file, size) {
+  var buffer = getRandomBuffer(size);
+  fs.writeFileSync(file, buffer);
 }
 
 /**
