@@ -338,7 +338,7 @@ function basicStorageAppendBlobOperations(config, callback) {
                 } else {
                   fs.stat(downloadedFileName, function(error, stats) {
                     console.log('5. Append block to append blob');
-                    blobService.appendBlockFromText(appendBlobContainerName, appendBlobName, 'text to be appended', { appendPosition: stats.size } /** append to the end of the existing append blob */, function(error){
+                    blobService.appendBlockFromText(appendBlobContainerName, appendBlobName, 'text to be appended', { appendPosition: stats.size } /** Verify that the blob has NOT been written by another process */, function(error){
                       if (error) {
                         callback(error);
                       } else {
