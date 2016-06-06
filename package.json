@@ -28,7 +28,7 @@
   "dependencies": {
     "node-uuid": "~1.4.0",
     "request": "~2.56.0",
-    "azure-storage": "0.6.0"
+    "azure-storage": "~1.0"
   },
   "devDependencies": {
     "jshint": ">= 2.1.4"
