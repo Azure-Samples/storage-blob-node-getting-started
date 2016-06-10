@@ -56,11 +56,6 @@ function basicStorageBlockBlobOperations(callback) {
   blobService.createContainerIfNotExists(blockBlobContainerName, function (error) {
     if (error) return callback(error);
 
-    // To view the uploaded blob in a browser, you have two options. The first option is to use a Shared Access Signature (SAS) token to delegate 
-    // access to the resource. See the documentation links at the top for more information on SAS. The second approach is to set permissions 
-    // to allow public access to blobs in this container. Uncomment the line below to use this approach. Then you can view the image 
-    // using: https://[InsertYourStorageAccountNameHere].blob.core.windows.net/demoblockblobcontainer-[guid]/demoblockblob-HelloWorld.png
-
     // Upload a BlockBlob to the newly created container
     console.log('2. Uploading BlockBlob');
     blobService.createBlockBlobFromLocalFile(blockBlobContainerName, blockBlobName, imageToUpload, function (error) {
@@ -105,7 +100,7 @@ function basicStorageBlockBlobOperations(callback) {
                 var blockList = { 'UncommittedBlocks': blockIds };
                 blobService.commitBlocks(blockBlobContainerName, blockBlobName, blockList, function (error) {
 
-                  // Clean up after the demo 
+                  // Clean up after the demo. Deleting blobs are not necessary if you also delete the container. The code below simply shows how to do that.
                   console.log('7. Delete block Blob and all of its snapshots');
                   var deleteOption = { deleteSnapshots: storage.BlobUtilities.SnapshotDeleteOptions.BLOB_AND_SNAPSHOTS };
                   blobService.deleteBlob(blockBlobContainerName, blockBlobName, deleteOption, function (error) {
@@ -230,10 +225,12 @@ function listBlobs(blobService, container, token, options, blobs, callback) {
   blobs = blobs || [];
 
   blobService.listBlobsSegmented(container, token, options, function (error, result) {
+    if (error) return callback(error);
+
     blobs.push.apply(blobs, result.entries);
     var token = result.continuationToken;
     if (token) {
-      console.log('   Received a page of results. There are ' + result.entries.length + ' blobs on this page.');
+      console.log('   Received a segment of results. There are ' + result.entries.length + ' blobs on this segment.');
       listBlobs(blobService, container, token, options, blobs, callback);
     } else {
       console.log('   Completed listing. There are ' + blobs.length + ' blobs.');

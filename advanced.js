@@ -109,7 +109,7 @@ function containerOperations(callback) {
 
     // List all the containers within the storage account.
     console.log('2. List Container');
-    listContainers(blobService, null, null, null, function (error, results) {
+    listContainers('demoblobcontainer', blobService, null, null, null, function (error, results) {
       if (error) return callback(error);
 
       for (var i = 0; i < results.length; i++) {
@@ -133,6 +133,8 @@ function setCorsRules(callback) {
   blobService.getServiceProperties(function (error, properties) {
     if (error) return callback(error);
 
+    var originalCors = properties.Cors;
+
     properties.Cors = {
       CorsRule: [{
         AllowedOrigins: ['*'],
@@ -144,7 +146,14 @@ function setCorsRules(callback) {
     };
 
     blobService.setServiceProperties(properties, function (error) {
-      return callback(error);
+      if (error) return callback(error);
+
+      // reverts the cors rules back to the original ones so they do not get corrupted by the ones set in this sample
+      properties.Cors = originalCors;
+
+      blobService.setServiceProperties(properties, function (error) {
+        return callback(error);
+      });
     });
   });
 }
@@ -232,9 +241,9 @@ function containerOperationsWithSas(callback) {
     if (error) return callback(error);
 
     console.log('2. Getting Shared Access Signature for container');
-    var startDate = new Date();
-    var expiryDate = new Date(startDate);
-    expiryDate.setMinutes(startDate.getMinutes() + 30);
+    var expiryDate = new Date();
+
+    expiryDate.setMinutes(expiryDate.getMinutes() + 30);
 
     var sharedAccessPolicy = {
       AccessPolicy: {
@@ -242,7 +251,6 @@ function containerOperationsWithSas(callback) {
         storage.BlobUtilities.SharedAccessPermissions.WRITE +
         storage.BlobUtilities.SharedAccessPermissions.DELETE +
         storage.BlobUtilities.SharedAccessPermissions.LIST,
-        Start: startDate,
         Expiry: expiryDate
       }
     };
@@ -261,10 +269,10 @@ function containerOperationsWithSas(callback) {
 
         console.log('5. Deleting blob with Shared Access Signature');
         sharedBlobService.deleteBlob(containerName, blobName, function (error) {
-          if(error) return callback(error);
-          
+          if (error) return callback(error);
+
           console.log('6. Deleting container');
-          blobService.deleteContainer(containerName, function(error) {
+          blobService.deleteContainer(containerName, function (error) {
             return callback(error);
           })
         })
@@ -277,6 +285,7 @@ function containerOperationsWithSas(callback) {
 * Lists containers in account.
 * @ignore
 *
+* @param {string}             prefix                              The prefix of the container.
 * @param {BlobService}        blobService                         The blob service client.
 * @param {object}             token                               A continuation token returned by a previous listing operation. 
 *                                                                 Please use 'null' or 'undefined' if this is the first operation.
@@ -298,15 +307,17 @@ function containerOperationsWithSas(callback) {
 *                                                                         `entries`  gives a list of `[containers]{@link ContainerResult}` and the `continuationToken` is used for the next listing operation.
 *                                                                         `response` will contain information related to this operation.
 */
-function listContainers(blobService, token, options, containers, callback) {
+function listContainers(prefix, blobService, token, options, containers, callback) {
   containers = containers || [];
 
-  blobService.listContainersSegmented(token, options, function (error, result) {
+  blobService.listContainersSegmentedWithPrefix(prefix, token, options, function (error, result) {
+    if (error) return callback(error);
+
     containers.push.apply(containers, result.entries);
     var token = result.continuationToken;
     if (token) {
-      console.log('   Received a page of results. There are ' + result.entries.length + ' containers on this page.');
-      listContainers(blobService, token, options, containers, callback);
+      console.log('   Received a segment of results. There are ' + result.entries.length + ' containers on this segment.');
+      listContainers(prefix, blobService, token, options, containers, callback);
     } else {
       console.log('   Completed listing. There are ' + containers.length + ' containers.');
       callback(null, containers);
@@ -343,10 +354,12 @@ function listBlobs(blobService, container, token, options, blobs, callback) {
   blobs = blobs || [];
 
   blobService.listBlobsSegmented(container, token, options, function (error, result) {
+    if (error) return callback(error);
+
     blobs.push.apply(blobs, result.entries);
     var token = result.continuationToken;
     if (token) {
-      console.log('   Received a page of results. There are ' + result.entries.length + ' blobs on this page.');
+      console.log('   Received a segment of results. There are ' + result.entries.length + ' blobs on this segment.');
       listBlobs(blobService, container, token, options, blobs, callback);
     } else {
       console.log('   Completed listing. There are ' + blobs.length + ' blobs.');
