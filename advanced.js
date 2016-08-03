@@ -44,6 +44,30 @@ function advancedSamples() {
     {
       action: containerOperationsWithSas,
       message: 'Containers Sample with SAS Completed\n'
+    },
+    {
+      action: serviceProperties,
+      message: 'Service Properties Sample Completed\n'
+    },
+    {
+      action: containerProperties,
+      message: 'Container Properties Sample Completed\n'
+    },
+    {
+      action: containerMetadata,
+      message: 'Container Metadata Sample Completed\n'
+    },
+    {
+      action: containerAcl,
+      message: 'Container Access Policy Sample Completed\n'
+    },
+    {
+      action: blobProperties,
+      message: 'Blob Properties Sample Completed\n'
+    },
+    {
+      action: blobMetadata,
+      message: 'Blob Metadata Sample Completed\n'
     }
   ];
 }
@@ -281,6 +305,287 @@ function containerOperationsWithSas(callback) {
   });
 }
 
+// Set logging and metrics service properties
+function serviceProperties(callback) {
+  // Create a blob client for interacting with the blob service from connection string
+  // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
+  var blobService = storage.createBlobService(config.connectionString);
+
+  blobService.getServiceProperties(function (error, properties) {
+    if (error) return callback(error);
+
+    var originalProperties = properties;
+
+    properties = serviceProperties = {
+      Logging: {
+        Version: '1.0',
+        Delete: true,
+        Read: true,
+        Write: true,
+        RetentionPolicy: {
+          Enabled: true,
+          Days: 10,
+        },
+      },
+      HourMetrics: {
+        Version: '1.0',
+        Enabled: true,
+        IncludeAPIs: true,
+        RetentionPolicy: {
+          Enabled: true,
+          Days: 10,
+        },
+      },
+      MinuteMetrics: {
+        Version: '1.0',
+        Enabled: true,
+        IncludeAPIs: true,
+        RetentionPolicy: {
+          Enabled: true,
+          Days: 10,
+        },
+      }
+    };
+
+    blobService.setServiceProperties(properties, function (error) {
+      if (error) return callback(error);
+
+      // reverts the cors rules back to the original ones so they do not get corrupted by the ones set in this sample
+      blobService.setServiceProperties(originalProperties, function (error) {
+        return callback(error);
+      });
+    });
+  });
+}
+
+// Retrieve statistics related to replication for the Blob service. 
+// This operation is only available on the secondary location endpoint when read-access geo-redundant replication is enabled for the storage account.
+function serviceStats(callback){
+
+  var blobService = storage.createBlobService(config.connectionString);
+
+  blobService.getServiceStats(function (error, serviceStats){
+    if(error) return callback(error);
+
+      if(serviceStats != null && serviceStats.GeoReplication != null)
+        console.log('Geo replication status: ' + serviceStats.GeoReplication.Status);
+
+        return callback(null);
+  });
+}
+
+// Get system properties of a container
+function containerProperties(callback){
+
+  var blobService = storage.createBlobService(config.connectionString);
+
+  var containerName = "demoblobcontainer-" + guid.v1();
+
+  console.log('1. Creating Container');
+
+  blobService.createContainerIfNotExists(containerName, function (error) {
+    if (error) return callback(error);
+
+    // List all the containers within the storage account.
+    console.log('2. Get Container Properties');
+    blobService.getContainerProperties(containerName, function (error, container, response) {
+      if(error) return callback(error);
+
+      console.log('request id: ', container.requestId);
+      console.log('name: ', container.name);
+      console.log('last modified: ', container.lastModified);
+      console.log('lease status: ', container.lease.status);
+      console.log('lease state: ', container.lease.state);
+
+      //Delete container
+      console.log('3. Delete Container');
+      blobService.deleteContainerIfExists(containerName, function (error) {
+        callback(error);
+      });
+    });
+  });
+}
+
+// Manage user-defined metadata of a container
+function containerMetadata(callback){
+
+  var blobService = storage.createBlobService(config.connectionString);
+
+  var containerName = "demoblobcontainer-" + guid.v1();
+
+  console.log('1. Creating Container');
+  blobService.createContainerIfNotExists(containerName, function (error) {
+    if (error) return callback(error);
+
+    // Set container metadata
+    var metadata = { 'Color': 'Blue', 'Foo': 'Bar' };
+    console.log('2. Set Container Metadata');
+    blobService.setContainerMetadata(containerName, metadata, function (error, result, response) {
+
+      // Get container metadata
+      console.log('3. Get Container Metadata');
+      blobService.getContainerMetadata(containerName, function (error, result, response) {
+        if(error) return callback(error);
+
+        console.log('Metadata:');
+        console.log(' Color: ', result.metadata.color);
+        console.log(' Foo: ', result.metadata.foo);
+
+        //Delete container
+        console.log('4. Delete Container');
+        blobService.deleteContainerIfExists(containerName, function (error) {
+          callback(error);
+        });
+      });
+    });
+  });
+}
+
+// Manage the public access policy and any stored access policies for the container
+function containerAcl(callback){
+
+  var blobService = storage.createBlobService(config.connectionString);
+
+  var containerName = "demoblobcontainer-" + guid.v1();
+
+  console.log('1. Creating Container');
+  blobService.createContainerIfNotExists(containerName, function (error) {
+    if (error) return callback(error);
+
+    // Set container metadata
+    var options = {publicAccessLevel: storage.BlobUtilities.BlobContainerPublicAccessType.CONTAINER};
+    console.log('2. Set Container Acl');
+    blobService.setContainerAcl(containerName, null, options, function (error, result, response) {
+      if(error) return callback(error);
+
+      // Get container Acl
+      console.log('3. Get Container Acl');
+      blobService.getContainerAcl(containerName, function (error, result, response) {
+        if(error) return callback(error);
+
+        console.log('Public access level: ', result.publicAccessLevel);
+
+        //Delete container
+        console.log('4. Delete Container');
+        blobService.deleteContainerIfExists(containerName, function (error) {
+          callback(error);
+        });
+      });
+    });
+  });
+}
+
+// Manage system properties on the blob
+function blobProperties(callback){
+
+  var blobService = storage.createBlobService(config.connectionString);
+
+  var containerName = "demoblobcontainer-" + guid.v1();
+
+  // Create Container
+  console.log('1. Creating Container');
+  blobService.createContainerIfNotExists(containerName, function (error) {
+    if (error) return callback(error);
+
+    // Create Blob
+    var text = 'hello';
+    var blobName = 'blob-' + guid.v1();
+    console.log('2. Creating Blob');
+    blobService.createBlockBlobFromText(containerName, blobName, text, function (error) {
+      if (error) return callback(error);
+
+      var properties = {};
+      properties.contentType = 'text';
+      properties.contentEncoding = 'utf8';
+      properties.contentLanguage = 'pt';
+      properties.cacheControl = 'true';
+      properties.contentDisposition = 'attachment';
+
+      // Set blob properties
+      console.log('3. Set Blob Properties');
+      blobService.setBlobProperties(containerName, blobName, properties, function (error) {
+        if (error) return callback(error);
+
+        // Get blob properties
+        console.log('4. Get Blob Properties');
+        blobService.getBlobProperties(containerName, blobName, function (error, blob) {
+          if (error) return callback(error);
+
+          console.log(' Length: ' + blob.contentLength);
+          console.log(' Content Type: ' + blob.contentSettings.contentType);
+          console.log(' Content Encoding: ' + blob.contentSettings.contentEncoding);
+          console.log(' Content Language: ' + blob.contentSettings.contentLanguage);
+          console.log(' Content Disposition: ' + blob.contentSettings.contentDisposition);
+          console.log(' Cache Control: ' + blob.contentSettings.cacheControl);
+
+          // Delete blob
+          console.log('5. Delete Blob');
+          blobService.deleteBlob(containerName, blobName, function (error) {
+            if (error) return callback(error);
+
+            // Delete container
+            console.log('6. Delete Container');
+            blobService.deleteContainerIfExists(containerName, function (error) {
+              callback(error);
+            });
+          });
+        });
+      });
+    });
+  });
+}
+
+// Manage user-defined metadata of a blob
+function blobMetadata(callback){
+
+  var blobService = storage.createBlobService(config.connectionString);
+
+  var containerName = "demoblobcontainer-" + guid.v1();
+
+  // Create Container
+  console.log('1. Creating Container');
+  blobService.createContainerIfNotExists(containerName, function (error) {
+    if (error) return callback(error);
+
+    // Create Blob
+    var text = 'hello';
+    var blobName = 'blob-' + guid.v1();
+    console.log('2. Creating Blob');
+    blobService.createBlockBlobFromText(containerName, blobName, text, function (error) {
+      if (error) return callback(error);
+
+      var metadata = { Color: 'Blue', Foo: 'Bar'};
+
+      // Set blob metadata
+      console.log('3. Set Blob Metadata');
+      blobService.setBlobMetadata(containerName, blobName, metadata, function (error) {
+        if (error) return callback(error);
+
+        // Get blob metadata
+        console.log('4. Get Blob Metadata');
+        blobService.getBlobMetadata(containerName, blobName, function (error, result) {
+          if (error) return callback(error);
+
+          console.log(' Color: ' + result.metadata.color);
+          console.log(' Foo: ' + result.metadata.foo);
+
+          // Delete blob
+          console.log('5. Delete Blob');
+          blobService.deleteBlob(containerName, blobName, function (error) {
+            if (error) return callback(error);
+
+            // Delete container
+            console.log('6. Delete Container');
+            blobService.deleteContainerIfExists(containerName, function (error) {
+              callback(error);
+            });
+          });
+        });
+      });
+    });
+  });
+}
+
 /**
 * Lists containers in account.
 * @ignore
@@ -367,5 +672,6 @@ function listBlobs(blobService, container, token, options, blobs, callback) {
     }
   });
 }
+
 
 module.exports = advancedSamples();
