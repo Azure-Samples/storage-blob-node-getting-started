@@ -4,6 +4,9 @@ platforms: nodejs
 author: yaxia
 ---
 
+> **WARNING** 
+> You are viewing a tutorial for the legacy version of the Azure Storage Node.js SDK. Please go [here](https://github.com/Azure-Samples/azure-storage-js-v10-quickstart) to view the latest JavaScript SDK (v10).
+
 # Getting Started with Azure Blob Service in Node.js
 
 Demonstrates how to use the Blob Storage service.
